@@ -15,13 +15,23 @@ let sortableInstance = null;
 
 // --- التهيئة وحماية المسارات ---
 onAuthStateChange((user) => {
-  if (!user || user.role !== 'admin') {
-    window.location.href = 'index.html'; // إعادة توجيه إذا لم يكن أدمن
-  } else {
-    loadForms();
-    loadUsers();
-    switchTab('forms'); // التبويب الافتراضي
+  // 1. هل المستخدم مسجل الدخول أصلاً؟
+  if (!user) {
+    window.location.href = 'index.html';
+    return; // أوقف التنفيذ
   }
+  
+  // 2. هل دور المستخدم "أدمن"؟
+  if (user.role !== 'admin') {
+    alert('غير مصرح لك بالدخول إلى لوحة التحكم.');
+    window.location.href = 'form_view.html'; // ارجعه للواجهة العادية
+    return; // أوقف التنفيذ
+  }
+
+  // 3. إذا كان أدمن، قم بتحميل البيانات
+  loadForms();
+  loadUsers();
+  switchTab('forms'); // التبويب الافتراضي
 });
 
 // --- التنقل بين التبويبات ---

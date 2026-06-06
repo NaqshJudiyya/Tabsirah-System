@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // دوال مساعدة للتحقق من الصلاحيات
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return isAuthenticated() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
+    }
+
+    function isAdmin() {
+      return getUserRole() == 'admin';
+    }
+
+    function isCounselor() {
+      return getUserRole() == 'counselor';
+    }
+
+    function isAssignedCounselor(formId) {
+      let form = get(/databases/$(database)/documents/forms/$(formId));
+      return isCounselor() && form.data.assignedCounselors.has(request.auth.uid);
+    }
+
+    function isFormPublished(formId) {
+      return get(/databases/$(database)/documents/forms/$(formId)).data.status == 'published';
+    }
+
+    // 1. كولكشن المستخدمين
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && isAdmin(); // فقط الأدمن يغير الأدوار
+    }
+
+    // 2. كولكشن الاستمارات والكولكشنات الفرعية
+    match /forms/{formId} {
+      // الاستمارة الأساسية
+      allow read: if isAuthenticated(); // يمكن لأي مستخدم مصادق رؤية الاستمارات
+      allow create, update, delete: if isAdmin();
+
+      // أسئلة الاستمارة
+      match /questions/{questionId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+
+      // مستويات التقييم
+      match /evaluationLevels/{levelId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+
+    // 3. كولكشن الاستجابات والكولكشنات الفرعية
+    match /responses/{responseId} {
+      // الاستجابة الأساسية
+      allow create: if isAuthenticated() && isFormPublished(resource.data.formId);
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId || 
+        isAdmin() || 
+        isAssignedCounselor(resource.data.formId)
+      );
+      allow update, delete: if isAdmin(); // لا يمكن للمستجيب تعديل أو حذف استجابته بعد الإرسال
+
+      // إجابات الاستجابة
+      match /answers/{answerId} {
+        allow create: if isAuthenticated() && isFormPublished(get(/databases/$(database)/documents/responses/$(responseId)).data.formId);
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/responses/$(responseId)).data.userId || 
+          isAdmin() || 
+          isAssignedCounselor(get(/databases/$(database)/documents/responses/$(responseId)).data.formId)
+        );
+        allow update, delete: if isAdmin();
+      }
+    }
+  }
+}

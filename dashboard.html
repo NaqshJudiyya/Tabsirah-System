@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم — تبصرة</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- مكتبة السحب والإفلات -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden font-body">
+
+  <!-- الشريط الجانبي -->
+  <aside class="w-64 bg-slate-800 text-white flex flex-col">
+    <div class="p-6 border-b border-slate-700">
+      <h1 class="text-2xl font-extrabold" style="font-family: var(--font-heading);"><i class="fas fa-brain ml-2 text-blue-400"></i>تبصرة</h1>
+      <p class="text-xs text-slate-400 mt-1">نظام الاستمارات الذكي</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+      <button onclick="switchTab('forms')" id="tab-forms" class="nav-btn w-full text-right px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center">
+        <i class="fas fa-file-alt ml-3"></i>إدارة الاستمارات
+      </button>
+      <button onclick="switchTab('users')" id="tab-users" class="nav-btn w-full text-right px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center">
+        <i class="fas fa-users ml-3"></i>إدارة المستخدمين
+      </button>
+      <button onclick="switchTab('theme')" id="tab-theme" class="nav-btn w-full text-right px-4 py-2 rounded-lg hover:bg-slate-700 transition flex items-center">
+        <i class="fas fa-palette ml-3"></i>تخصيص المظهر
+      </button>
+    </nav>
+    <div class="p-4 border-t border-slate-700">
+      <button onclick="import('../../firebase/auth.js').then(m => m.logout())" class="w-full text-right px-4 py-2 rounded-lg hover:bg-red-700 text-red-400 transition flex items-center">
+        <i class="fas fa-sign-out-alt ml-3"></i>تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="flex-1 overflow-y-auto p-8">
+    
+    <!-- قسم الاستمارات -->
+    <div id="section-forms" class="tab-content">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-slate-800" style="font-family: var(--font-heading);">الاستمارات</h2>
+        <button onclick="openFormBuilder()" class="btn-primary"><i class="fas fa-plus ml-2"></i>إنشاء استمارة جديدة</button>
+      </div>
+      
+      <!-- قائمة الاستمارات (تُملأ بـ JS) -->
+      <div id="forms-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+      <!-- بنّاء الاستمارة (مخفي افتراضياً) -->
+      <div id="form-builder-container" class="hidden mt-8 bg-white p-6 rounded-xl shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-blue-600" id="builder-title">بنّاء الاستمارة</h3>
+          <button onclick="closeFormBuilder()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
+        </div>
+        
+        <!-- إعدادات أساسية -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-sm font-semibold mb-1">عنوان الاستمارة</label>
+            <input type="text" id="form-title" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">الوصف</label>
+            <input type="text" id="form-desc" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+        </div>
+
+        <!-- منطقة إضافة الأسئلة -->
+        <div class="border-t border-b py-4 mb-4">
+          <div class="flex gap-2 items-end flex-wrap">
+            <div class="flex-1 min-w-[200px]">
+              <label class="block text-sm font-semibold mb-1">نص السؤال</label>
+              <input type="text" id="q-label" class="w-full px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div class="w-40">
+              <label class="block text-sm font-semibold mb-1">نوع السؤال</label>
+              <select id="q-type" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" onchange="handleQuestionTypeChange()">
+                <option value="text">نص قصير</option>
+                <option value="long_text">نص طويل</option>
+                <option value="email">بريد إلكتروني</option>
+                <option value="number">رقم</option>
+                <option value="date">تاريخ</option>
+                <option value="time">وقت</option>
+                <option value="radio">اختيار واحد (Radio)</option>
+                <option value="checkbox">اختيارات متعددة (Checkbox)</option>
+                <option value="select">قائمة منسدلة (Select)</option>
+                <option value="linear_scale">مقياس خطي</option>
+                <option value="scale_matrix">مصفوفة مقاييس</option>
+                <option value="section_title">عنوان قسم فاصل</option>
+              </select>
+            </div>
+            <label class="flex items-center gap-2 py-2"><input type="checkbox" id="q-required"> إلزامي</label>
+            <button onclick="addQuestion()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"><i class="fas fa-plus ml-1"></i> إضافة</button>
+          </div>
+          
+          <!-- خيارات الأسئلة (تظهر للـ Radio/Checkbox/Select) -->
+          <div id="options-container" class="hidden mt-4 bg-slate-50 p-4 rounded-lg border">
+            <h4 class="font-bold mb-2 text-sm">الخيارات والنقاط المخفية:</h4>
+            <div id="options-list" class="space-y-2"></div>
+            <button onclick="addOptionField()" class="text-blue-600 text-sm mt-2 hover:underline"><i class="fas fa-plus ml-1"></i> إضافة خيار</button>
+          </div>
+        </div>
+
+        <!-- قائمة الأسئلة المضافة (قابلة للسحب والإفلات) -->
+        <h4 class="font-bold mb-2">الأسئلة المضافة: <span class="text-sm text-slate-500">(اسحب لإعادة الترتيب)</span></h4>
+        <ul id="questions-list" class="space-y-2 mb-6"></ul>
+
+        <!-- منطق مستويات التقييم -->
+        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+          <h4 class="font-bold mb-2 text-blue-800"><i class="fas fa-chart-bar ml-1"></i> مستويات التقييم (بناءً على المجموع)</h4>
+          <div id="levels-list" class="space-y-2"></div>
+          <button onclick="addLevelField()" class="text-blue-600 text-sm mt-2 hover:underline"><i class="fas fa-plus ml-1"></i> إضافة مستوى</button>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button onclick="saveFormAsDraft()" class="px-6 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">حفظ كمسودة</button>
+          <button onclick="publishForm()" class="btn-primary">نشر الاستمارة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- قسم المستخدمين -->
+    <div id="section-users" class="tab-content hidden">
+      <h2 class="text-3xl font-bold text-slate-800 mb-6" style="font-family: var(--font-heading);">إدارة المستخدمين</h2>
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <table class="w-full text-right">
+          <thead class="bg-slate-800 text-white">
+            <tr>
+              <th class="p-4">الاسم</th>
+              <th class="p-4">البريد الإلكتروني</th>
+              <th class="p-4">الدور</th>
+              <th class="p-4">إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- قسم تخصيص المظهر -->
+    <div id="section-theme" class="tab-content hidden">
+      <h2 class="text-3xl font-bold text-slate-800 mb-6" style="font-family: var(--font-heading);">تخصيص المظهر العام</h2>
+      <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1">اللون الرئيسي (Primary)</label>
+            <input type="color" id="theme-primary" value="#2563eb" class="w-16 h-10 rounded cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">اللون الثانوي (Secondary)</label>
+            <input type="color" id="theme-secondary" value="#1e40af" class="w-16 h-10 rounded cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">استدارة الحواف (Border Radius)</label>
+            <input type="range" id="theme-radius" min="0" max="2" step="0.1" value="0.75" class="w-full">
+          </div>
+          <button onclick="applyAndSaveTheme()" class="btn-primary"><i class="fas fa-save ml-2"></i>حفظ وتطبيق المظهر</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- سكربتات لوحة التحكم -->
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

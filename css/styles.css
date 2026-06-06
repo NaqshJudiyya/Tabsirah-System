@@ -1,0 +1,85 @@
+/* public/css/styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Fustat:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+
+:root {
+  /* الألوان الافتراضية (سيتم الكتابة فوقها بواسطة Theme Customizer) */
+  --primary-color: #2563eb;
+  --secondary-color: #1e40af;
+  --accent-color: #3b82f6;
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+  --border-radius: 0.75rem;
+  
+  /* الخطوط */
+  --font-heading: 'Fustat', sans-serif;
+  --font-body: 'Noto Naskh Arabic', serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  direction: rtl;
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+/* تخصيص شريط التقدم للاستمارة */
+.progress-bar-container {
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 0.75rem;
+}
+
+.progress-bar-fill {
+  background-color: var(--primary-color);
+  height: 100%;
+  transition: width 0.4s ease-in-out;
+  border-radius: 9999px;
+}
+
+/* تنسيقات بطاقة المشاركة (التي سيتم تحويلها لصورة) */
+.share-card {
+  width: 600px;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: var(--border-radius);
+  text-align: center;
+  position: absolute;
+  left: -9999px; /* مخفي عن العرض ولكن موجود للالتقاط */
+}
+
+/* تنسيقات مشتركة */
+.card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+}

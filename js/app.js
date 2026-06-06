@@ -78,13 +78,17 @@ btnGuestLogin.addEventListener('click', async () => {
 
 // --- حماية المسارات والتوجيه (Route Guarding) ---
 onAuthStateChange((user) => {
-  // إذا كنا في الصفحة الرئيسية (index.html) والمستخدم مسجل الدخول، وجهه للوحة التحكم المناسبة
-  if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+  const currentPath = window.location.pathname;
+  
+  // التحقق مما إذا كنا في الصفحة الرئيسية (تسجيل الدخول)
+  const isLoginPage = currentPath.endsWith('index.html') || currentPath.endsWith('/tabassura-system/') || currentPath === '/';
+  
+  if (isLoginPage) {
     if (user) {
       if (user.role === 'admin' || user.role === 'counselor') {
         window.location.href = 'dashboard.html';
       } else {
-        // المستجيب العادي أو الضيف يتم توجيهه لقائمة الاستمارات المتاحة
+        // المستجيب العادي يتم توجيهه لقائمة الاستمارات (سنتركه يذهل لصفحة الاستمارات كحل مؤقت)
         window.location.href = 'form_view.html';
       }
     }

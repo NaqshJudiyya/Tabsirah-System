@@ -1,4 +1,3 @@
-// public/js/admin.js
 import { db } from "../firebase/firebase-config.js";
 import { onAuthStateChange } from "../firebase/auth.js";
 import { 
@@ -6,6 +5,9 @@ import {
   saveFormQuestions, saveEvaluationLevels, 
   getAllUsers, updateUserRole 
 } from "../firebase/firestore-service.js";
+
+// استيراد لدوال Firestore المباشرة
+import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- متغيرات الحالة ---
 let currentFormId = null;

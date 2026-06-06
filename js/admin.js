@@ -365,5 +365,11 @@ function generateUID() {
   return 'q_' + Math.random().toString(36).substr(2, 9);
 }
 
+// ربط زر تسجيل الخروج
+document.getElementById('btn-logout')?.addEventListener('click', async () => {
+    const { logout } = await import("../firebase/auth.js");
+    logout();
+});
+
 // استيراد لدوال Firestore المباشرة المستخدمة في editForm
 import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";

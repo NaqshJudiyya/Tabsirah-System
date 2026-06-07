@@ -94,7 +94,13 @@ export async function submitFormResponse(formId, userId, answers, totalScore, ev
 
   // 2. إنشاء مستندات الإجابات الفرعية
   answers.forEach(answer => {
-    const answerRef = doc(collection(responseRef, "answers"));
+    // ✅ الطريقة الصحيحة: استخدام المسار الكامل
+    const answerRef = doc(collection(db, "responses", responseRef.id, "answers"));
+    //                              ^^                  ^^^^^^^^^^^^
+    //                        قاعدة البيانات          معرف المستند الأب
+    //
+    // هذا ينشئ المسار: db → responses → {responseId} → answers → {newAnswerId}
+    
     batch.set(answerRef, {
       questionId: answer.questionId,
       value: answer.value,
@@ -102,7 +108,6 @@ export async function submitFormResponse(formId, userId, answers, totalScore, ev
     });
   });
 
-  // تنفيذ العملية دفعة واحدة لضمان تكامل البيانات
   await batch.commit();
   return responseRef.id;
 }
